@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dil Seviye Testi | A1 - C2</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --primary: #3b82f6;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  header {
+    text-align: center;
+    padding: 40px 0 30px;
+  }
+  header h1 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header p { color: var(--muted); font-size: 1.1rem; }
+
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  }
+
+  .lang-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  .lang-btn {
+    background: #334155;
+    border: 2px solid transparent;
+    color: white;
+    padding: 18px 12px;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .lang-btn:hover {
+    background: #475569;
+    transform: translateY(-2px);
+  }
+  .lang-btn.active {
+    border-color: var(--primary);
+    background: #1e40af;
+  }
+
+  .progress-bar {
+    height: 10px;
+    background: #334155;
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    width: 0%;
+    transition: width 0.3s;
+  }
+
+  .question-box h2 {
+    font-size: 1.35rem;
+    margin-bottom: 20px;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .option {
+    background: #334155;
+    border: 2px solid transparent;
+    padding: 16px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1.05rem;
+  }
+  .option:hover { background: #475569; }
+  .option.selected { border-color: var(--primary); background: #1e3a8a; }
+  .option.correct { border-color: var(--success); background: #14532d; }
+  .option.wrong { border-color: var(--danger); background: #7f1d1d; }
+
+  .btn {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 20px;
+  }
+  .btn:hover { background: #2563eb; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-success { background: var(--success); }
+  .btn-success:hover { background: #16a34a; }
+
+  .result-box {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .result-box .level {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 20px 0;
+    background: linear-gradient(90deg, #22c55e, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .result-box .score {
+    font-size: 1.4rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .level-desc {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 25px 0;
+    text-align: left;
+    font-size: 1.05rem;
+  }
+
+  .hidden { display: none !important; }
+
+  footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.7rem; }
+    .lang-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Dil Seviye Testi</h1>
+    <p>A1 – C2 arası seviyeni ölç • Her dilde 30 soru</p>
+  </header>
+
+  <!-- DİL SEÇİM EKRANI -->
+  <div id="langScreen" class="card">
+    <h2 style="margin-bottom:18px;text-align:center;">Hangi dili test etmek istiyorsun?</h2>
+    <div class="lang-grid" id="langGrid"></div>
+  </div>
+
+  <!-- QUIZ EKRANI -->
+  <div id="quizScreen" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span id="langName" style="font-weight:600;color:#60a5fa;"></span>
+      <span id="qCounter" style="color:var(--muted);"></span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="question-box">
+      <h2 id="questionText"></h2>
+      <div class="options" id="options"></div>
+    </div>
+    <button class="btn" id="nextBtn" disabled>Sonraki Soru →</button>
+  </div>
+
+  <!-- SONUÇ EKRANI -->
+  <div id="resultScreen" class="card hidden">
+    <div class="result-box">
+      <div style="font-size:1.2rem;color:var(--muted);">Test tamamlandı!</div>
+      <div class="level" id="finalLevel">B1</div>
+      <div class="score" id="finalScore">0 / 30 doğru</div>
+      <div class="level-desc" id="levelDesc"></div>
+      <button class="btn btn-success" onclick="goHome()">Ana Sayfaya Dön</button>
+    </div>
+  </div>
+
+  <footer>
+    CEFR standartlarına göre hazırlanmıştır • A1 → C2
+  </footer>
+</div>
+
+<script>
+// ===================== SORULAR =====================
+const questions = {
+  english: [
+    // A1
+    {q:"What is the opposite of 'hot'?", opts:["Cold","Warm","Cool","Heat"], ans:0},
+    {q:"Choose the correct sentence:", opts:["She go to school.","She goes to school.","She going to school.","She gone to school."], ans:1},
+    {q:"I ___ a student.", opts:["am","is","are","be"], ans:0},
+    {q:"How ___ are you?", opts:["old","age","years","much"], ans:0},
+    {q:"This is ___ apple.", opts:["a","an","the","some"], ans:1},
+    // A2
+    {q:"She ___ to the cinema yesterday.", opts:["go","goes","went","going"], ans:2},
+    {q:"I have lived here ___ 2019.", opts:["for","since","from","during"], ans:1},
+    {q:"If it rains, we ___ stay at home.", opts:["will","would","are","can"], ans:0},
+    {q:"He is ___ than his brother.", opts:["tall","taller","tallest","more tall"], ans:1},
+    {q:"I enjoy ___ books in my free time.", opts:["read","to read","reading","reads"], ans:2},
+    // B1
+    {q:"Despite ___ hard, he didn't pass the exam.", opts:["study","studying","studied","to study"], ans:1},
+    {q:"The book ___ by many people last year.", opts:["was read","read","is reading","has read"], ans:0},
+    {q:"I wish I ___ more time.", opts:["have","had","has","having"], ans:1},
+    {q:"She asked me where I ___.", opts:["live","lived","living","lives"], ans:1},
+    {q:"You ___ smoke in this area. It's forbidden.", opts:["mustn't","needn't","don't have to","shouldn't"], ans:0},
+    // B2
+    {q:"Not only ___ late, but he also forgot the documents.", opts:["he was","was he","he is","is he"], ans:1},
+    {q:"I'd rather you ___ that.", opts:["don't do","didn't do","not do","won't do"], ans:1},
+    {q:"The project, ___ was completed last month, is a great success.", opts:["who","which","what","whose"], ans:1},
+    {q:"Hardly ___ when it started to rain.", opts:["we arrived","had we arrived","we had arrived","did we arrive"], ans:1},
+    {q:"She is used to ___ up early.", opts:["get","getting","got","gets"], ans:1},
+    // C1
+    {q:"Had it not been for your help, I ___ succeeded.", opts:["wouldn't have","wouldn't","hadn't","didn't"], ans:0},
+    {q:"The more he tried to explain, ___ confused I became.", opts:["the more","more","the most","most"], ans:0},
+    {q:"It is essential that every student ___ on time.", opts:["is","be","are","being"], ans:1},
+    {q:"She spoke as if she ___ the answer.", opts:["knows","knew","has known","know"], ans:1},
+    {q:"Little ___ that he would become famous.", opts:["he knew","did he know","he did know","knew he"], ans:1},
+    // C2
+    {q:"No sooner ___ the door than the phone rang.", opts:["I had closed","had I closed","I closed","did I close"], ans:1},
+    {q:"Such was his anger that he could barely speak.", opts:["True","False","Not a sentence","Incorrect grammar"], ans:0},
+    {q:"Were it not for the traffic, we would be there by now.", opts:["Correct conditional","Wrong tense","Missing subject","Incorrect"], ans:0},
+    {q:"The report, having been thoroughly checked, was finally submitted.", opts:["Correct participle clause","Wrong structure","Missing verb","Incorrect"], ans:0},
+    {q:"In no way ___ responsible for the failure.", opts:["he is","is he","he was","was he"], ans:1}
+  ],
+
+  russian: [
+    {q:"Как сказать 'Hello' по-русски?", opts:["Привет","Пока","Спасибо","Да"], ans:0},
+    {q:"Я ___ студент.", opts:["есть","есть я","—","являюсь"], ans:2},
+    {q:"Это ___ книга.", opts:["мой","моя","моё","мои"], ans:1},
+    {q:"Сколько тебе ___?", opts:["лет","года","год","летов"], ans:0},
+    {q:"Я живу в ___.", opts:["Москва","Москве","Москвы","Москвою"], ans:1},
+    {q:"Вчера я ___ в кино.", opts:["хожу","ходил","иду","пойду"], ans:1},
+    {q:"Я изучаю русский язык ___ два года.", opts:["в","за","на","с"], ans:1},
+    {q:"Если будет дождь, мы ___ дома.", opts:["останемся","остаёмся","остались","остаёмся бы"], ans:0},
+    {q:"Он выше, чем его ___.", opts:["брат","брата","брату","братом"], ans:0},
+    {q:"Мне нравится ___ книги.", opts:["читать","читаю","читал","читающий"], ans:0},
+    {q:"Несмотря на то, что он много ___, он не сдал экзамен.", opts:["учился","учил","учит","учёба"], ans:0},
+    {q:"Книга была ___ многими людьми.", opts:["прочитана","прочитана была","читали","прочитана есть"], ans:0},
+    {q:"Я бы хотел, чтобы у меня было больше ___.", opts:["время","времени","временем","времена"], ans:1},
+    {q:"Она спросила меня, где я ___.", opts:["живу","жил","живущий","жить"], ans:0},
+    {q:"Здесь ___ курить.", opts:["нельзя","не надо","не нужно","не должен"], ans:0},
+    {q:"Не только он опоздал, но и ___ документы.", opts:["забыл","забыл он","он забыл","забывал"], ans:0},
+    {q:"Я бы предпочёл, чтобы ты этого не ___.", opts:["делал","делаешь","сделал","делать"], ans:0},
+    {q:"Проект, ___ был завершён в прошлом месяце, имеет большой успех.", opts:["который","кто","что","чей"], ans:0},
+    {q:"Едва мы ___, как начался дождь.", opts:["пришли","пришли мы","мы пришли","приходили"], ans:0},
+    {q:"Она привыкла ___ рано.", opts:["вставать","встаёт","встала","встающий"], ans:0},
+    {q:"Если бы не твоя помощь, я бы не ___.", opts:["успел","успею","успевал","успел бы"], ans:0},
+    {q:"Чем больше он пытался объяснить, тем ___ я становился.", opts:["более запутанным","запутаннее","самый запутанный","запутанный"], ans:0},
+    {q:"Важно, чтобы каждый студент ___ вовремя.", opts:["был","есть","будет","быть"], ans:0},
+    {q:"Она говорила так, как будто ___ ответ.", opts:["знала","знает","знает она","знающий"], ans:0},
+    {q:"Мало кто ___ , что он станет знаменитым.", opts:["знал","знает","знал он","знающий"], ans:0},
+    {q:"Как только я ___ дверь, зазвонил телефон.", opts:["закрыл","закрыл я","я закрыл","закрывающий"], ans:0},
+    {q:"Таков был его гнев, что он едва мог говорить.", opts:["Правильно","Неправильно","Ошибка","Не предложение"], ans:0},
+    {q:"Если бы не пробки, мы бы уже были там.", opts:["Правильное условие","Неверный время","Нет подлежащего","Неверно"], ans:0},
+    {q:"Отчёт, тщательно проверенный, был наконец представлен.", opts:["Правильно","Неверная структура","Нет глагола","Неверно"], ans:0},
+    {q:"Никоим образом он не ___ ответственен за провал.", opts:["является","является он","он является","являющийся"], ans:0}
+  ],
+
+  german: [
+    {q:"Wie sagt man 'Hello' auf Deutsch?", opts:["Hallo","Tschüss","Danke","Ja"], ans:0},
+    {q:"Ich ___ Student.", opts:["bin","bist","ist","sind"], ans:0},
+    {q:"Das ist ___ Buch.", opts:["mein","meine","meinen","meiner"], ans:0},
+    {q:"Wie alt ___ du?", opts:["bist","bist du","sind","seid"], ans:0},
+    {q:"Ich wohne in ___.", opts:["Berlin","Berliner","Berlins","Berlinen"], ans:0},
+    {q:"Gestern ___ ich ins Kino.", opts:["gehe","ging","gegangen","gehe ich"], ans:1},
+    {q:"Ich lerne Deutsch ___ zwei Jahren.", opts:["seit","für","von","ab"], ans:0},
+    {q:"Wenn es regnet, ___ wir zu Hause.", opts:["bleiben","blieben","bleiben wir","bleiben würden"], ans:0},
+    {q:"Er ist größer als sein ___.", opts:["Bruder","Bruders","Bruder","Brüder"], ans:0},
+    {q:"Ich mag es, Bücher zu ___.", opts:["lesen","lese","gelesen","lesend"], ans:0},
+    {q:"Trotz des vielen ___, hat er die Prüfung nicht bestanden.", opts:["Lernens","Lernen","gelernt","lernt"], ans:0},
+    {q:"Das Buch wurde von vielen Leuten ___.", opts:["gelesen","gelesen worden","las","liest"], ans:0},
+    {q:"Ich wünschte, ich hätte mehr ___.", opts:["Zeit","Zeiten","Zeitens","Zeitungen"], ans:0},
+    {q:"Sie fragte mich, wo ich ___.", opts:["wohne","wohnte","wohnend","wohnen"], ans:0},
+    {q:"Hier ___ man nicht rauchen.", opts:["darf","muss","soll","kann"], ans:0},
+    {q:"Nicht nur war er spät, sondern er hat auch die Dokumente ___.", opts:["vergessen","vergaß","vergessen hat","vergisst"], ans:0},
+    {q:"Ich würde es vorziehen, wenn du das nicht ___.", opts:["tust","tatest","getan hast","tun"], ans:0},
+    {q:"Das Projekt, ___ letzten Monat abgeschlossen wurde, ist ein großer Erfolg.", opts:["das","der","die","dem"], ans:0},
+    {q:"Kaum waren wir angekommen, ___ es an zu regnen.", opts:["fing","fing es","es fing","gefangen"], ans:0},
+    {q:"Sie ist es gewohnt, früh ___.", opts:["aufzustehen","steht auf","aufgestanden","aufstehend"], ans:0},
+    {q:"Wäre es nicht für deine Hilfe gewesen, hätte ich nicht ___.", opts:["erfolgreich gewesen","Erfolg gehabt","erfolgreich","Erfolg"], ans:1},
+    {q:"Je mehr er versuchte zu erklären, desto ___ wurde ich.", opts:["verwirrter","verwirrend","verwirrtest","verwirrendst"], ans:0},
+    {q:"Es ist wichtig, dass jeder Student pünktlich ___.", opts:["ist","sei","war","sein"], ans:1},
+    {q:"Sie sprach, als ob sie die Antwort ___.", opts:["wüsste","weiß","gewusst hat","wissend"], ans:0},
+    {q:"Kaum jemand ___ , dass er berühmt werden würde.", opts:["wusste","weiß","gewusst","wissend"], ans:0},
+    {q:"Kaum hatte ich die Tür geschlossen, ___ das Telefon.", opts:["klingelte","klingelte es","es klingelte","klingelnd"], ans:0},
+    {q:"Solcher war sein Zorn, dass er kaum sprechen konnte.", opts:["Richtig","Falsch","Kein Satz","Falsche Grammatik"], ans:0},
+    {q:"Wäre da nicht der Verkehr, wären wir jetzt schon da.", opts:["Richtige Bedingung","Falsche Zeit","Fehlendes Subjekt","Falsch"], ans:0},
+    {q:"Der Bericht, nachdem er gründlich geprüft worden war, wurde endlich eingereicht.", opts:["Richtig","Falsche Struktur","Fehlendes Verb","Falsch"], ans:0},
+    {q:"Keineswegs ist er für das Scheitern ___.", opts:["verantwortlich","verantwortlich er","er verantwortlich","verantwortlichend"], ans:0}
+  ],
+
+  french: [
+    {q:"Comment dit-on 'Hello' en français ?", opts:["Bonjour","Au revoir","Merci","Oui"], ans:0},
+    {q:"Je ___ étudiant.", opts:["suis","es","est","sommes"], ans:0},
+    {q:"C'est ___ livre.", opts:["mon","ma","mes","mien"], ans:0},
+    {q:"Quel âge ___-tu ?", opts:["as","as-tu","avez","a"], ans:0},
+    {q:"J'habite à ___.", opts:["Paris","Parisien","Parisien","Parise"], ans:0},
+    {q:"Hier, je ___ au cinéma.", opts:["vais","suis allé","allé","allais"], ans:1},
+    {q:"J'apprends le français ___ deux ans.", opts:["depuis","pendant","pour","il y a"], ans:0},
+    {q:"S'il pleut, nous ___ à la maison.", opts:["resterons","restons","restions","resterions"], ans:0},
+    {q:"Il est plus grand que son ___.", opts:["frère","frère","frères","frère"], ans:0},
+    {q:"J'aime ___ des livres.", opts:["lire","lis","lu","lisant"], ans:0},
+    {q:"Malgré beaucoup d'___, il n'a pas réussi l'examen.", opts:["études","étudier","étudié","étudiant"], ans:0},
+    {q:"Le livre a été ___ par beaucoup de gens.", opts:["lu","lire","lit","lisant"], ans:0},
+    {q:"Je voudrais avoir plus de ___.", opts:["temps","temp","temporal","temporaire"], ans:0},
+    {q:"Elle m'a demandé où j'___.", opts:["habite","habitais","habitant","habiter"], ans:0},
+    {q:"Ici, on ___ pas fumer.", opts:["ne doit","ne peut","ne doit pas","ne faut"], ans:2},
+    {q:"Non seulement il était en retard, mais il a aussi ___ les documents.", opts:["oublié","oublia","oublié a","oublie"], ans:0},
+    {q:"Je préférerais que tu ne ___ pas cela.", opts:["fasses","fais","fait","faire"], ans:0},
+    {q:"Le projet, ___ a été terminé le mois dernier, est un grand succès.", opts:["qui","que","dont","lequel"], ans:0},
+    {q:"À peine étions-nous arrivés que ___ a commencé à pleuvoir.", opts:["il","il a","a-t-il","il avait"], ans:0},
+    {q:"Elle a l'habitude de se ___ tôt.", opts:["lever","lève","levé","levant"], ans:0},
+    {q:"Sans ton aide, je n'aurais pas ___.", opts:["réussi","réussir","réussissant","réussit"], ans:0},
+    {q:"Plus il essayait d'expliquer, plus je devenais ___.", opts:["confus","confuse","confusément","confusion"], ans:0},
+    {q:"Il est essentiel que chaque étudiant ___ à l'heure.", opts:["soit","est","sera","être"], ans:0},
+    {q:"Elle parlait comme si elle ___ la réponse.", opts:["savait","sait","su","sachant"], ans:0},
+    {q:"Peu de gens ___ qu'il deviendrait célèbre.", opts:["savaient","sait","su","sachant"], ans:0},
+    {q:"À peine avais-je fermé la porte que le téléphone ___.", opts:["sonna","sonne","sonné","sonnant"], ans:0},
+    {q:"Telle était sa colère qu'il pouvait à peine parler.", opts:["Correct","Incorrect","Pas une phrase","Grammaire fausse"], ans:0},
+    {q:"N'eût été le trafic, nous y serions déjà.", opts:["Condition correcte","Temps faux","Sujet manquant","Incorrect"], ans:0},
+    {q:"Le rapport, ayant été soigneusement vérifié, a enfin été soumis.", opts:["Correct","Structure fausse","Verbe manquant","Incorrect"], ans:0},
+    {q:"En aucun cas il n'est responsable de l'échec.", opts:["Correct","Incorrect","Structure fausse","Verbe manquant"], ans:0}
+  ],
+
+  japanese: [
+    {q:"「Hello」は日本語で何ですか？", opts:["こんにちは","さようなら","ありがとう","はい"], ans:0},
+    {q:"私は学生___。", opts:["です","だ","である","ます"], ans:0},
+    {q:"これは___本です。", opts:["私の","私","僕の","俺の"], ans:0},
+    {q:"何歳___か？", opts:["です","ですか","だ","である"], ans:1},
+    {q:"私は東京に住んで___。", opts:["います","いる","ある","です"], ans:0},
+    {q:"昨日映画館に行き___。", opts:["ました","ます","る","た"], ans:0},
+    {q:"日本語を___年間勉強しています。", opts:["二","二つ","二本","二枚"], ans:0},
+    {q:"雨が降ったら、家に___。", opts:["います","いる","ある","です"], ans:0},
+    {q:"彼は兄より___です。", opts:["背が高い","高い","大きい","長い"], ans:0},
+    {q:"本を読むのが___です。", opts:["好き","好きな","好む","好むの"], ans:0},
+    {q:"たくさん勉強したのに、試験に___。", opts:["落ちた","落ちる","落ちます","落ちたの"], ans:0},
+    {q:"その本は多くの人に___。", opts:["読まれた","読んだ","読む","読んでいる"], ans:0},
+    {q:"もっと時間があったら___。", opts:["いい","良い","よかった","いいの"], ans:0},
+    {q:"彼女は私がどこに住んでいるか___。", opts:["聞いた","聞く","聞いて","聞きます"], ans:0},
+    {q:"ここではタバコを___いけません。", opts:["吸って","吸う","吸います","吸った"], ans:0},
+    {q:"遅れただけでなく、書類も___。", opts:["忘れた","忘れる","忘れます","忘れたの"], ans:0},
+    {q:"それをしないでほしい。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"先月完成したプロジェクトは大成功です。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"到着したとたん、雨が降り始めた。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"彼女は早起きするのに慣れている。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"君の助けがなければ成功しなかっただろう。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"説明すればするほど、混乱した。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"すべての学生が時間通りにいることが重要だ。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"彼女は答えを知っているかのように話した。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"彼が有名になるとはほとんど誰も知らなかった。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"ドアを閉めたとたん、電話が鳴った。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"彼の怒りはそれほどで、ほとんど話せなかった。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"渋滞がなければ、今頃着いていただろう。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"徹底的にチェックされた報告書はついに提出された。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0},
+    {q:"決して失敗の責任はない。", opts:["正しい","間違い","文ではない","文法誤り"], ans:0}
+  ],
+
+  korean: [
+    {q:"'Hello'는 한국어로 무엇입니까?", opts:["안녕하세요","안녕히 가세요","감사합니다","네"], ans:0},
+    {q:"나는 학생___.", opts:["입니다","이다","이에요","예요"], ans:0},
+    {q:"이것은 ___ 책입니다.", opts:["나의","나","제","내"], ans:0},
+    {q:"몇 살___?", opts:["이에요","입니까","이다","예요"], ans:1},
+    {q:"나는 서울에 살고 ___.", opts:["있습니다","있어요","이다","입니다"], ans:0},
+    {q:"어제 영화관에 갔___.", opts:["습니다","어요","다","습니다요"], ans:0},
+    {q:"한국어를 ___ 년 동안 공부하고 있습니다.", opts:["이","두","세","네"], ans:1},
+    {q:"비가 오면 집에 ___ 거예요.", opts:["있을","있는","있","있습니다"], ans:0},
+    {q:"그는 형보다 ___.", opts:["키가 큽니다","큽니다","큽니다요","큰다"], ans:0},
+    {q:"책 읽는 것을 ___합니다.", opts:["좋아","좋아하는","좋아하","좋아해요"], ans:0},
+    {q:"많이 공부했는데도 시험에 ___.", opts:["떨어졌습니다","떨어진다","떨어졌어요","떨어지다"], ans:0},
+    {q:"그 책은 많은 사람들에게 ___.", opts:["읽혔습니다","읽었습니다","읽어요","읽다"], ans:0},
+    {q:"시간이 더 있었으면 ___.", opts:["좋겠어요","좋습니다","좋아요","좋다"], ans:0},
+    {q:"그녀는 내가 어디에 사는지 ___.", opts:["물었습니다","묻습니다","물어요","묻다"], ans:0},
+    {q:"여기서는 담배를 ___ 안 됩니다.", opts:["피우면","피우","피웁니다","피우다"], ans:0},
+    {q:"늦은 것뿐만 아니라 서류도 ___.", opts:["잊어버렸습니다","잊어버립니다","잊어버려요","잊어버리다"], ans:0},
+    {q:"그것을 하지 않았으면 합니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"지난달에 완성된 프로젝트는 큰 성공입니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"도착하자마자 비가 오기 시작했습니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"그녀는 일찍 일어나는 것에 익숙합니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"당신의 도움이 없었다면 성공하지 못했을 것입니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"설명하면 할수록 더 혼란스러워졌습니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"모든 학생이 제시간에 있는 것이 중요합니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"그녀는 답을 알고 있는 것처럼 말했습니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"그가 유명해질 줄은 거의 아무도 몰랐습니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"문을 닫자마자 전화가 울렸습니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"그의 분노는 그렇게 커서 거의 말할 수 없었습니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"교통 체증이 없었다면 지금쯤 도착했을 것입니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"철저히 검토된 보고서는 마침내 제출되었습니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0},
+    {q:"결코 실패에 대한 책임이 없습니다.", opts:["맞다","틀리다","문장 아님","문법 오류"], ans:0}
+  ],
+
+  italian: [
+    {q:"Come si dice 'Hello' in italiano?", opts:["Ciao","Arrivederci","Grazie","Sì"], ans:0},
+    {q:"Io ___ studente.", opts:["sono","sei","è","siamo"], ans:0},
+    {q:"Questo è ___ libro.", opts:["il mio","la mia","i miei","le mie"], ans:0},
+    {q:"Quanti anni ___?", opts:["hai","hai tu","avete","ha"], ans:0},
+    {q:"Vivo a ___.", opts:["Roma","Romano","Roma","Romi"], ans:0},
+    {q:"Ieri ___ al cinema.", opts:["vado","sono andato","andato","andavo"], ans:1},
+    {q:"Studio italiano ___ due anni.", opts:["da","per","di","con"], ans:0},
+    {q:"Se piove, ___ a casa.", opts:["resteremo","restiamo","restavamo","resteremmo"], ans:0},
+    {q:"È più alto di suo ___.", opts:["fratello","fratello","fratelli","fratello"], ans:0},
+    {q:"Mi piace ___ libri.", opts:["leggere","leggo","letto","leggendo"], ans:0},
+    {q:"Nonostante abbia studiato molto, non ha superato l'esame.", opts:["Corretto","Sbagliato","Non è una frase","Grammatica errata"], ans:0},
+    {q:"Il libro è stato ___ da molte persone.", opts:["letto","leggere","legge","leggendo"], ans:0},
+    {q:"Vorrei avere più ___.", opts:["tempo","tempi","temporale","temporaneo"], ans:0},
+    {q:"Mi ha chiesto dove ___.", opts:["abito","abitavo","abitando","abitare"], ans:0},
+    {q:"Qui non si ___ fumare.", opts:["può","deve","deve non","fa"], ans:0},
+    {q:"Non solo era in ritardo, ma ha anche ___ i documenti.", opts:["dimenticato","dimenticò","dimenticato ha","dimentica"], ans:0},
+    {q:"Preferirei che tu non ___ questo.", opts:["facessi","fai","fatto","fare"], ans:0},
+    {q:"Il progetto, ___ è stato completato il mese scorso, è un grande successo.", opts:["che","cui","il quale","chi"], ans:0},
+    {q:"Appena arrivati, ___ a piovere.", opts:["ha cominciato","cominciò","ha cominciato a","cominciando"], ans:0},
+    {q:"È abituata ad ___ presto.", opts:["alzarsi","alza","alzato","alzando"], ans:0},
+    {q:"Senza il tuo aiuto, non avrei ___.", opts:["successo","riuscito","riuscire","riuscendo"], ans:1},
+    {q:"Più cercava di spiegare, più diventavo ___.", opts:["confuso","confusa","confusamente","confusione"], ans:0},
+    {q:"È essenziale che ogni studente ___ in orario.", opts:["sia","è","sarà","essere"], ans:0},
+    {q:"Parlava come se ___ la risposta.", opts:["sapesse","sa","saputo","sapendo"], ans:0},
+    {q:"Pochi sapevano che sarebbe diventato famoso.", opts:["Corretto","Sbagliato","Non è una frase","Grammatica errata"], ans:0},
+    {q:"Appena chiusa la porta, il telefono ___.", opts:["squillò","squilla","squillato","squillando"], ans:0},
+    {q:"Tale era la sua rabbia che poteva a malapena parlare.", opts:["Corretto","Sbagliato","Non è una frase","Grammatica errata"], ans:0},
+    {q:"Se non fosse stato per il traffico, saremmo già lì.", opts:["Condizione corretta","Tempo sbagliato","Soggetto mancante","Sbagliato"], ans:0},
+    {q:"Il rapporto, dopo essere stato accuratamente controllato, è stato finalmente presentato.", opts:["Corretto","Struttura sbagliata","Verbo mancante","Sbagliato"], ans:0},
+    {q:"In nessun modo è responsabile del fallimento.", opts:["Corretto","Sbagliato","Struttura sbagliata","Verbo mancante"], ans:0}
+  ],
+
+  spanish: [
+    {q:"¿Cómo se dice 'Hello' en español?", opts:["Hola","Adiós","Gracias","Sí"], ans:0},
+    {q:"Yo ___ estudiante.", opts:["soy","eres","es","somos"], ans:0},
+    {q:"Este es ___ libro.", opts:["mi","mis","mío","mía"], ans:0},
+    {q:"¿Cuántos años ___?", opts:["tienes","tienes tú","tiene","tienen"], ans:0},
+    {q:"Vivo en ___.", opts:["Madrid","Madrileño","Madrid","Madriles"], ans:0},
+    {q:"Ayer ___ al cine.", opts:["voy","fui","ido","iba"], ans:1},
+    {q:"Estudio español ___ dos años.", opts:["desde","por","de","con"], ans:0},
+    {q:"Si llueve, ___ en casa.", opts:["nos quedaremos","nos quedamos","nos quedábamos","nos quedaríamos"], ans:0},
+    {q:"Es más alto que su ___.", opts:["hermano","hermano","hermanos","hermano"], ans:0},
+    {q:"Me gusta ___ libros.", opts:["leer","leo","leído","leyendo"], ans:0},
+    {q:"A pesar de haber estudiado mucho, no aprobó el examen.", opts:["Correcto","Incorrecto","No es una frase","Gramática incorrecta"], ans:0},
+    {q:"El libro fue ___ por mucha gente.", opts:["leído","leer","lee","leyendo"], ans:0},
+    {q:"Me gustaría tener más ___.", opts:["tiempo","tiempos","temporal","temporario"], ans:0},
+    {q:"Me preguntó dónde ___.", opts:["vivo","vivía","viviendo","vivir"], ans:0},
+    {q:"Aquí no se ___ fumar.", opts:["puede","debe","debe no","hace"], ans:0},
+    {q:"No solo llegó tarde, sino que también ___ los documentos.", opts:["olvidó","olvidó","ha olvidado","olvida"], ans:0},
+    {q:"Preferiría que no ___ eso.", opts:["hicieras","haces","hecho","hacer"], ans:0},
+    {q:"El proyecto, ___ se completó el mes pasado, es un gran éxito.", opts:["que","cual","el cual","quien"], ans:0},
+    {q:"Apenas llegamos, ___ a llover.", opts:["empezó","empezó a","ha empezado","empezando"], ans:0},
+    {q:"Está acostumbrada a ___ temprano.", opts:["levantarse","levanta","levantado","levantando"], ans:0},
+    {q:"Si no hubiera sido por tu ayuda, no habría ___.", opts:["tenido éxito","éxito","tenido","teniendo"], ans:0},
+    {q:"Cuanto más intentaba explicar, más ___ me volvía.", opts:["confundido","confundida","confusamente","confusión"], ans:0},
+    {q:"Es esencial que cada estudiante ___ a tiempo.", opts:["esté","está","estará","estar"], ans:0},
+    {q:"Hablaba como si ___ la respuesta.", opts:["supiera","sabe","sabido","sabiendo"], ans:0},
+    {q:"Pocos sabían que se haría famoso.", opts:["Correcto","Incorrecto","No es una frase","Gramática incorrecta"], ans:0},
+    {q:"Apenas cerré la puerta, el teléfono ___.", opts:["sonó","suena","sonado","sonando"], ans:0},
+    {q:"Tal era su ira que apenas podía hablar.", opts:["Correcto","Incorrecto","No es una frase","Gramática incorrecta"], ans:0},
+    {q:"De no ser por el tráfico, ya estaríamos allí.", opts:["Condición correcta","Tiempo incorrecto","Sujeto faltante","Incorrecto"], ans:0},
+    {q:"El informe, habiendo sido revisado minuciosamente, fue finalmente presentado.", opts:["Correcto","Estructura incorrecta","Verbo faltante","Incorrecto"], ans:0},
+    {q:"De ninguna manera es responsable del fracaso.", opts:["Correcto","Incorrecto","Estructura incorrecta","Verbo faltante"], ans:0}
+  ]
+};
+
+// Dil isimleri (Türkçe)
+const langNames = {
+  english: "İngilizce",
+  russian: "Rusça",
+  german: "Almanca",
+  french: "Fransızca",
+  japanese: "Japonca",
+  korean: "Korece",
+  italian: "İtalyanca",
+  spanish: "İspanyolca"
+};
+
+// Seviye açıklamaları
+const levelInfo = {
+  A1: "Başlangıç seviyesi. Temel kelimeler ve basit cümleler kurabiliyorsun.",
+  A2: "Temel seviye. Günlük basit konuşmaları anlayıp katılabiliyorsun.",
+  B1: "Orta seviye. Günlük hayatın çoğu durumunda kendini ifade edebiliyorsun.",
+  B2: "Orta-üstü seviye. Karmaşık metinleri anlayıp akıcı konuşabiliyorsun.",
+  C1: "İleri seviye. Akademik ve profesyonel ortamlarda rahatça kullanabiliyorsun.",
+  C2: "Uzman seviye. Ana dili konuşanlara yakın hakimiyetin var."
+};
+
+// ===================== UYGULAMA =====================
+let currentLang = null;
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let selectedOption = null;
+
+// Dil butonlarını oluştur
+const langGrid = document.getElementById("langGrid");
+Object.keys(langNames).forEach(key => {
+  const btn = document.createElement("button");
+  btn.className = "lang-btn";
+  btn.textContent = langNames[key];
+  btn.onclick = () => startQuiz(key);
+  langGrid.appendChild(btn);
+});
+
+function startQuiz(lang) {
+  currentLang = lang;
+  currentQuestions = questions[lang];
+  currentIndex = 0;
+  score = 0;
+  selectedOption = null;
+
+  document.getElementById("langScreen").classList.add("hidden");
+  document.getElementById("quizScreen").classList.remove("hidden");
+  document.getElementById("resultScreen").classList.add("hidden");
+
+  document.getElementById("langName").textContent = langNames[lang];
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = currentQuestions[currentIndex];
+  document.getElementById("questionText").textContent = `${currentIndex + 1}. ${q.q}`;
+  document.getElementById("qCounter").textContent = `${currentIndex + 1} / ${currentQuestions.length}`;
+  document.getElementById("progressFill").style.width = `${((currentIndex) / currentQuestions.length) * 100}%`;
+
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+  selectedOption = null;
+  document.getElementById("nextBtn").disabled = true;
+
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement("div");
+    div.className = "option";
+    div.textContent = opt;
+    div.onclick = () => selectOption(div, i);
+    optionsDiv.appendChild(div);
+  });
+}
+
+function selectOption(div, index) {
+  if (selectedOption !== null) return;
+
+  selectedOption = index;
+  const options = document.querySelectorAll(".option");
+  options.forEach(o => o.classList.remove("selected"));
+  div.classList.add("selected");
+
+  const correct = currentQuestions[currentIndex].ans;
+  if (index === correct) {
+    div.classList.add("correct");
+    score++;
+  } else {
+    div.classList.add("wrong");
+    options[correct].classList.add("correct");
+  }
+
+  document.getElementById("nextBtn").disabled = false;
+}
+
+document.getElementById("nextBtn").onclick = () => {
+  currentIndex++;
+  if (currentIndex < currentQuestions.length) {
+    showQuestion();
+  } else {
+    showResult();
+  }
+};
+
+function showResult() {
+  document.getElementById("quizScreen").classList.add("hidden");
+  document.getElementById("resultScreen").classList.remove("hidden");
+
+  const percentage = (score / currentQuestions.length) * 100;
+  let level = "A1";
+  if (percentage >= 90) level = "C2";
+  else if (percentage >= 75) level = "C1";
+  else if (percentage >= 60) level = "B2";
+  else if (percentage >= 45) level = "B1";
+  else if (percentage >= 30) level = "A2";
+  else level = "A1";
+
+  document.getElementById("finalLevel").textContent = level;
+  document.getElementById("finalScore").textContent = `${score} / ${currentQuestions.length} doğru`;
+  document.getElementById("levelDesc").textContent = levelInfo[level];
+}
+
+// Ana sayfaya dön
+function goHome() {
+  document.getElementById("resultScreen").classList.add("hidden");
+  document.getElementById("quizScreen").classList.add("hidden");
+  document.getElementById("langScreen").classList.remove("hidden");
+  
+  // Değişkenleri sıfırla
+  currentLang = null;
+  currentQuestions = [];
+  currentIndex = 0;
+  score = 0;
+  selectedOption = null;
+}
+</script>
+</body>
+  </html>
